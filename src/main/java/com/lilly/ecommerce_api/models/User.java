@@ -16,12 +16,12 @@ public class User {
     @Indexed(unique = true)
     private String email;
     private String name;
-    private String password_hash;
+    private String passwordHash;
     private String address;
 
     public User(String email, String password_hash){
         this.email = email;
-        this.password_hash = password_hash;
+        this.passwordHash = password_hash;
     }
 
 }

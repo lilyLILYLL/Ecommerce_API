@@ -1,15 +1,11 @@
 package com.lilly.ecommerce_api.services;
-
-import com.lilly.ecommerce_api.config.SecurityConfig;
 import com.lilly.ecommerce_api.models.User;
 import com.lilly.ecommerce_api.repositories.UserRepository;
-import com.lilly.ecommerce_api.utils.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.lilly.ecommerce_api.security.JwtUtil;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -50,6 +46,15 @@ public class UserService {
         }
         //return JWT token
         return jwtUtil.generateToken(user.getEmail());
+    }
+
+    // Get Authenticated User
+    public User getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = auth.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
 

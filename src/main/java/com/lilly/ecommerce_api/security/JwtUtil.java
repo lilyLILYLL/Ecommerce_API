@@ -1,9 +1,8 @@
-package com.lilly.ecommerce_api.utils;
+package com.lilly.ecommerce_api.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -14,11 +13,11 @@ public class JwtUtil {
 
     // 1. SECRET KEY: In production, store this in application.properties!
     // Must be at least 256 bits (32 chars) long for HS256 security.
-    private static final String SECRET = "YourSuperSecretKeyThatMustBeVeryLongAndSecure123456";
+    @Value("${jwt.secret}")
+    private String SECRET;
 
     // 2. Generate a Key object from the secret string
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
@@ -36,10 +35,10 @@ public class JwtUtil {
     // You can add more checks (like expiration) here
     public String extractEmail(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
+                .verifyWith(getSigningKey()) // VERIFY
+                .build() //Constructs the parser object
+                .parseSignedClaims(token) //Decodes the token string back into its JSON structure
+                .getPayload() // Extracts the "Claims" (the data inside the token, like email, expiration, etc.).
                 .getSubject();// Return the "owner" of the token
     }
 }

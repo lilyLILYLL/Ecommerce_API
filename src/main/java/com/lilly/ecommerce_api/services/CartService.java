@@ -1,0 +1,65 @@
+package com.lilly.ecommerce_api.services;
+
+import com.lilly.ecommerce_api.models.Cart;
+import com.lilly.ecommerce_api.models.CartItem;
+import com.lilly.ecommerce_api.models.Product;
+import com.lilly.ecommerce_api.repositories.CartRepository;
+import com.lilly.ecommerce_api.repositories.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+@Service
+public class CartService {
+
+    private  final CartRepository cartRepository;
+    private final ProductRepository productRepository;
+
+    public CartService(CartRepository cartRepository, ProductRepository productRepository){
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
+    }
+
+    public Cart getOrCreateACart(String userId){
+        // find cart by userId, If it doesn't exist, create a new one
+        return cartRepository.findById(userId).orElseGet(()->{
+            Cart cart  = new Cart(userId);
+            return cartRepository.save(cart);
+        });
+    }
+
+    public void addItemToCart(String userId, String productId, int quantity){
+        // Find Product, check if it exists
+        Product product = productRepository.findById(productId)
+                                            .orElseThrow(() -> new NoSuchElementException("This product does not exist!"));
+
+        // Get a Cart or create one if it doesn't exist
+        Cart cart = getOrCreateACart(userId);
+
+        // Check if item already exists in the cart
+        Optional<CartItem> existingItemOpt = cart.getItems().stream().filter(item -> item.getProductId().equals(productId)).findFirst();
+
+        if(existingItemOpt.isPresent()){
+            // Check if there is enough stock
+            CartItem existingItem = existingItemOpt.get();
+            int totalQuantity = existingItem.getQuantity() + quantity;
+
+            // Not enough stock
+            if( totalQuantity > product.getStockQuantity()){
+                throw new IllegalArgumentException("Not enough stock!");
+            }
+
+            existingItem.setQuantity(totalQuantity);
+        }else{
+            // create a new item
+            CartItem newItem = new CartItem(productId, quantity, product.getPrice(), product.getName());
+            cart.getItems().add(newItem); // add to cart
+
+        }
+        cartRepository.save(cart);
+
+    }
+
+}

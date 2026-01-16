@@ -18,18 +18,28 @@ public class CartController {
         this.userService = userService;
         this.cartService  =cartService;
     }
+    // Reusable helper
+    private String getCurrentUserId() {
+        return userService.getAuthenticatedUser().getUserId();
+    }
     @PostMapping
     public ResponseEntity<?> addItemToCart(@RequestBody CartRecords.AddItemToCartRequest request){
-        User currentUser = userService.getAuthenticatedUser();
-        cartService.addItemToCart(currentUser.getUserId(), request.productId(), request.quantity());
+        cartService.addItemToCart(getCurrentUserId(), request.productId(), request.quantity());
         return ResponseEntity.status(HttpStatus.OK).body("Added");
     }
 
     @DeleteMapping("/{productId}")
     public ResponseEntity<?> removeItemFromCart(@PathVariable String productId){
-        User currentUser = userService.getAuthenticatedUser();
-        cartService.removeItemFromCart(currentUser.getUserId(), productId);
+        cartService.removeItemFromCart(getCurrentUserId(), productId);
         return ResponseEntity.ok("Removed");
     }
+
+    @GetMapping
+    public ResponseEntity<CartRecords.GetCartResponse> getCart(){
+        CartRecords.GetCartResponse response = cartService.getCart(getCurrentUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+
+    }
+
 
 }

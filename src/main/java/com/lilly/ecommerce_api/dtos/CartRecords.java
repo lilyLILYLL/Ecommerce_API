@@ -8,5 +8,5 @@ import java.util.List;
 public class CartRecords {
     public record AddItemToCartRequest(String productId, int quantity) {}
     public record RemoveItemFromCartRequest(String productId) {}
-    public record GetCartResponse(List<CartItem> list, double totalAmount){}
+    public record GetCartResponse( double totalAmount,List<CartItem> items){}
 }

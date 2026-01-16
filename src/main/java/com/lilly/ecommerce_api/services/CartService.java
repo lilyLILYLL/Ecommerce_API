@@ -1,5 +1,6 @@
 package com.lilly.ecommerce_api.services;
 
+import com.lilly.ecommerce_api.dtos.CartRecords;
 import com.lilly.ecommerce_api.models.Cart;
 import com.lilly.ecommerce_api.models.CartItem;
 import com.lilly.ecommerce_api.models.Product;
@@ -73,6 +74,14 @@ public class CartService {
 
         // SAve the updated cart
         cartRepository.save(cart);
+
+    }
+
+    public CartRecords.GetCartResponse getCart(String userId){
+        // Get a Cart or create one if it doesn't exist
+        Cart cart = getOrCreateACart(userId);
+
+        return new CartRecords.GetCartResponse(cart.getTotalAmount(),cart.getItems());
 
     }
 

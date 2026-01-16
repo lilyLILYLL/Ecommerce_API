@@ -59,7 +59,23 @@ public class CartService {
 
         }
         cartRepository.save(cart);
+    }
+    public void removeItemFromCart(String userId, String productId){
+        // Get a Cart or create one if it doesn't exist
+        Cart cart = getOrCreateACart(userId);
+
+        // 2. Find and remove the item
+        boolean removed = cart.getItems().removeIf(item -> item.getProductId().equals(productId));
+
+        if(!removed){
+            throw  new NoSuchElementException("Product not in the cart!");
+        }
+
+        // SAve the updated cart
+        cartRepository.save(cart);
 
     }
+
+
 
 }

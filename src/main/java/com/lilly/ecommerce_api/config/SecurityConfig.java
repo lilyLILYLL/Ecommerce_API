@@ -3,6 +3,7 @@ package com.lilly.ecommerce_api.config;
 import com.lilly.ecommerce_api.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -14,6 +15,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    String[] PUBLIC_GET_ENDPOINTS = {
+            "/products/**",
+            "/reviews/**",
+            "/search/**"
+    };
 
     private final JwtAuthenticationFilter jwtFilter;
 
@@ -26,7 +32,8 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Open access
+                        .requestMatchers("/auth/**").permitAll()// Open access
+                        .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINTS).permitAll() // batch allow GETS
                         .anyRequest().authenticated()               // Everything else locked
                 )
                 // Add our custom JWT filter

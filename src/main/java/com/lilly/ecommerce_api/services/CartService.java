@@ -1,12 +1,11 @@
 package com.lilly.ecommerce_api.services;
 
-import com.lilly.ecommerce_api.dtos.CartRecords;
+import com.lilly.ecommerce_api.dtos.CartDto;
 import com.lilly.ecommerce_api.models.Cart;
 import com.lilly.ecommerce_api.models.CartItem;
 import com.lilly.ecommerce_api.models.Product;
 import com.lilly.ecommerce_api.repositories.CartRepository;
 import com.lilly.ecommerce_api.repositories.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -77,12 +76,34 @@ public class CartService {
 
     }
 
-    public CartRecords.GetCartResponse getCart(String userId){
+    public CartDto.GetCartResponse getCart(String userId){
         // Get a Cart or create one if it doesn't exist
         Cart cart = getOrCreateACart(userId);
 
-        return new CartRecords.GetCartResponse(cart.getTotalAmount(),cart.getItems());
+        return new CartDto.GetCartResponse(cart.getTotalAmount(),cart.getItems());
 
+    }
+
+    // Update Quantity Of An Item In Cart
+    public void updateQuantityOfAnItemInCart(String userId, String productId, int newQuantity){
+        // Get a Cart or create one if it doesn't exist
+        Cart cart = getOrCreateACart(userId);
+
+        // Check if the cartItem exists
+       Optional<CartItem> existingItem = cart.getItems().stream().filter(item -> item.getProductId().equals(productId)).findFirst();
+       if(existingItem.isEmpty()){
+           throw new NoSuchElementException("Item not found!");
+       }
+       // Check if the product exits and if there is enough stock
+       Product product = productRepository.findById(productId).orElseThrow(()-> new NoSuchElementException("Product Not Found!"));
+       if(product.getStockQuantity() < newQuantity){
+           throw new IllegalArgumentException("Not enough stock!");
+       }
+        // Update with new quantity
+       existingItem.get().setQuantity(newQuantity);
+
+       // Save cart to the repository
+        cartRepository.save(cart);
     }
 
 
